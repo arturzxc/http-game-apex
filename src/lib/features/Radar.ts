@@ -36,15 +36,8 @@ export class Radar {
   renderNpcs(localPlayer: app.core.Player, npcs: Iterable<app.core.NPC>) {
     for (const npc of npcs) {
       const position = this.calculatePosition(localPlayer, npc.localOrigin);
-      if (position) {
-        this.drawArrow(npc.createColor(), localPlayer, 180);
-
-        // npc.viewAng
-        // this.context.beginPath();
-        // this.context.arc(position.x, position.y, this.outerRadius / 40, 0, Math.PI * 2);
-        // this.context.fillStyle = npc.createColor();
-        // this.context.fill();
-      }
+      if (position)
+        this.drawChevron(position, npc.createColor(), localPlayer, 180);
     }
   }
 
@@ -53,10 +46,12 @@ export class Radar {
       if (!player.isValid || player === localPlayer) continue;
       const position = this.calculatePosition(localPlayer, player.localOrigin);
       if (position) {
-        this.context.beginPath();
-        this.context.arc(position.x, position.y, this.outerRadius / 40, 0, Math.PI * 2);
-        this.context.fillStyle = player.createColor(localPlayer);
-        this.context.fill();
+        console.log("Player vangle "+ player.viewAngleEye.value)
+        this.drawChevron(position, player.createColor(localPlayer), localPlayer, player.viewAngleEye.value);
+        // this.context.beginPath();
+        // this.context.arc(position.x, position.y, this.outerRadius / 40, 0, Math.PI * 2);
+        // this.context.fillStyle = player.createColor(localPlayer);
+        // this.context.fill();
       }
     }
   }
@@ -111,17 +106,14 @@ export class Radar {
     this.outerRadius = (this.canvas.width > this.canvas.height ? this.canvas.height : this.canvas.width) / 2;
   }
 
-  private drawArrow(strokeStyle: string, localPlayer: app.core.Player, playerViewAngleYaw: number) {
-    console.log("LocalPlayer yaw: " + localPlayer.viewAngle.value.y)
-    console.log("playerViewAngleYaw yaw: " + playerViewAngleYaw)
+  private drawChevron(position: { x: number, y: number }, strokeStyle: string, localPlayer: app.core.Player, playerViewAngleYaw: number) {
     const dYaw = localPlayer.viewAngle.value.y - playerViewAngleYaw;
-    console.log("playerViewAngleYaw yaw: " + playerViewAngleYaw)
     let ctx = this.context;
     ctx.save();
     ctx.beginPath();
-    ctx.translate(this.centerX, this.centerY)
-    ctx.rotate(-45 * Math.PI / 180) //initial rotation. don't change.
-    ctx.rotate(-dYaw * Math.PI / 180)
+    ctx.translate(position.x, position.y)
+    ctx.rotate(135 * Math.PI / 180) //initial rotation. don't change.
+    ctx.rotate(dYaw * Math.PI / 180)
     ctx.lineWidth = 5;
     ctx.moveTo(0, 0);
     ctx.lineTo(0, 10);
