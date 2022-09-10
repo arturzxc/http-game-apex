@@ -15,7 +15,15 @@ export class Aimbot {
     const enemyBasicInfo = this.createEnemyBasicInfo(localPlayer, players, npcs);
     if (enemyBasicInfo.length == 0) return;
     const closestEnemyBasicInfo = this.findClosestEnemyBasicInfo(enemyBasicInfo);
-    console.log(closestEnemyBasicInfo.viewAngleToPlayer.yaw)
+    console.log(""
+      + " LP_X:" + localPlayer.localOrigin.value.x.toFixed(2)
+      + " LP_Y:" + localPlayer.localOrigin.value.y.toFixed(2)
+      + " CE_X:" + closestEnemyBasicInfo.enemy.localOrigin.value.x.toFixed(2)
+      + " CE_Y:" + closestEnemyBasicInfo.enemy.localOrigin.value.y.toFixed(2)
+      + " CE_DPITCH:" + closestEnemyBasicInfo.viewAngleToPlayer.pitch.toFixed(2)
+      + " CE_DYAW:" + closestEnemyBasicInfo.viewAngleToPlayer.yaw.toFixed(2)
+      + " CE_CROSSHAIRDIST:" + closestEnemyBasicInfo.crosshairsDistance.toFixed(2)
+    );
 
     // if (closestEnemyBasicInfo.crosshairsDistance > 10) return;
     if (!buttonList.inAttack.value) return;
@@ -25,7 +33,7 @@ export class Aimbot {
     // if (localPlayer.viewAngle.value.y - closestEnemyBasicInfo.viewAngleToPlayer.yaw > 10) return;
 
 
-    if (closestEnemyBasicInfo.viewAngleToPlayer.yaw > 10) return;
+    if (closestEnemyBasicInfo.crosshairsDistance > 10) return;
 
     localPlayer.viewAngle.value = new VectorData(closestEnemyBasicInfo.viewAngleToPlayer.pitch, closestEnemyBasicInfo.viewAngleToPlayer.yaw, 0);
   }
@@ -122,18 +130,24 @@ export class Aimbot {
       if (!enemy.isValid) continue;
       if (enemy.isSameTeam(localPlayer)) continue;
       const viewAnglesToPlayer: ViewingAngles = this.calculateViewAngles(localPlayer, enemy);
+      const dyaw = localPlayer.viewAngle.value.y - viewAnglesToPlayer.yaw;
+      const dpitch = localPlayer.viewAngle.value.x - viewAnglesToPlayer.pitch;
+      const distanceToCrosshairs = Math.sqrt(Math.pow(dyaw, 2) + Math.pow(dpitch, 2));
       playerViewAngleInfo.push({
         enemy: enemy,
         viewAngleToPlayer: viewAnglesToPlayer,
-        crosshairsDistance: Math.abs(viewAnglesToPlayer.yaw)
+        crosshairsDistance: distanceToCrosshairs
       });
     }
     for (const enemy of npcs) {
       const viewAnglesToPlayer: ViewingAngles = this.calculateViewAngles(localPlayer, enemy);
+      const dyaw = localPlayer.viewAngle.value.y - viewAnglesToPlayer.yaw;
+      const dpitch = localPlayer.viewAngle.value.x - viewAnglesToPlayer.pitch;
+      const distanceToCrosshairs = Math.sqrt(Math.pow(dyaw, 2) + Math.pow(dpitch, 2));
       playerViewAngleInfo.push({
         enemy: enemy,
         viewAngleToPlayer: viewAnglesToPlayer,
-        crosshairsDistance: Math.abs(viewAnglesToPlayer.yaw)
+        crosshairsDistance: distanceToCrosshairs
       });
     }
     return playerViewAngleInfo;
