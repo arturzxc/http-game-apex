@@ -7,8 +7,9 @@ export class Runner {
     private readonly map = new app.features.Map(canvas),
     private readonly radar = new app.features.Radar(canvas),
     private readonly recoil = new app.features.Recoil(),
-    private readonly sense = new app.features.Sense()) {}
-  
+    private readonly sense = new app.features.Sense(),
+    private readonly aimbot = new app.features.Aimbot()) { }
+
   static create() {
     const source = new Runner();
     source.attach();
@@ -19,6 +20,7 @@ export class Runner {
     const localPlayer = core.playerList.get(core.localPlayer.value);
     this.updateResearch(vm, localPlayer);
     this.updateSense(core, vm, localPlayer);
+    this.aimbot.update(core.buttonList, localPlayer, core.playerList.values(), core.npcList.values());
     this.canvas.height = window.innerHeight;
     this.canvas.width = window.innerWidth;
     this.update(core, vm, localPlayer);
@@ -44,14 +46,14 @@ export class Runner {
         break;
     }
   }
-  
+
   private updateMap(core: app.core.Core, vm: ui.MainViewModel, localPlayer?: app.core.Player) {
     if (vm.settings.general.map.showItems.value)
       this.map.renderItems(core.itemList.values(), vm.settings.itemSet);
     if (vm.settings.general.map.showPlayers.value && localPlayer)
       this.map.renderPlayers(localPlayer, core.playerList.values());
   }
-  
+
   private updateRadar(core: app.core.Core, vm: ui.MainViewModel, localPlayer?: app.core.Player) {
     if (vm.settings.general.radar.showItems.value && localPlayer)
       this.radar.renderItems(localPlayer, core.itemList.values(), vm.settings.itemSet);
@@ -60,7 +62,7 @@ export class Runner {
     if (vm.settings.general.radar.showPlayers.value && localPlayer)
       this.radar.renderPlayers(localPlayer, core.playerList.values());
   }
-  
+
   private updateResearch(vm: ui.MainViewModel, localPlayer?: app.core.Player) {
     if (vm.settings.research.recoil.enable.value && localPlayer && vm.settings.research.recoil.options)
       this.recoil.update(localPlayer, vm.settings.research.recoil.options);
