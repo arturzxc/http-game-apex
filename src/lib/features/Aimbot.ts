@@ -6,35 +6,31 @@ import * as app from '.';
 
 export class Aimbot {
 
+  private isOn: boolean = false;
+  private vecPunchWeaponAngle = app.core.VectorData.none;
 
-  update(buttonList: app.core.ButtonList, localPlayer?: app.core.Player, players?: Iterable<Player>, npcs?: Iterable<NPC>) {
+  update(localPlayer?: app.core.Player, players?: Iterable<Player>, npcs?: Iterable<NPC>) {
+    if (!this.isOn) return;
     if (!localPlayer) return;
     if (!players) return;
     if (!npcs) return;
+    if (localPlayer.viewAngle.source.syncId) return;
 
+    //No recoil
+    const vecPunchWeaponAngle = localPlayer.vecPunchWeaponAngle.value;
+    const viewAngle = localPlayer.viewAngle.value;
+    if (Math.abs(vecPunchWeaponAngle.x) > 0 || Math.abs(vecPunchWeaponAngle.y) > 0) {
+      const x = viewAngle.x + (this.vecPunchWeaponAngle.x - vecPunchWeaponAngle.x);
+      const y = viewAngle.y + (this.vecPunchWeaponAngle.y - vecPunchWeaponAngle.y);
+      localPlayer.viewAngle.delta(new app.core.VectorData(x, y, viewAngle.z));
+      this.vecPunchWeaponAngle = vecPunchWeaponAngle;
+    }
+
+    //Aimbot
+    if (localPlayer.zooming.value != 1) return;
     const enemyBasicInfo = this.createEnemyBasicInfo(localPlayer, players, npcs);
     if (enemyBasicInfo.length == 0) return;
     const closestEnemyBasicInfo = this.findClosestEnemyBasicInfo(enemyBasicInfo);
-    console.log(""
-      + " LP_X:" + localPlayer.localOrigin.value.x.toFixed(2)
-      + " LP_Y:" + localPlayer.localOrigin.value.y.toFixed(2)
-      + " CE_X:" + closestEnemyBasicInfo.enemy.localOrigin.value.x.toFixed(2)
-      + " CE_Y:" + closestEnemyBasicInfo.enemy.localOrigin.value.y.toFixed(2)
-      + " CE_DPITCH:" + closestEnemyBasicInfo.viewAngleToPlayer.pitch.toFixed(2)
-      + " CE_DYAW:" + closestEnemyBasicInfo.viewAngleToPlayer.yaw.toFixed(2)
-      + " CE_CROSSHAIRDIST:" + closestEnemyBasicInfo.crosshairsDistance.toFixed(2)
-    );
-
-    // if (closestEnemyBasicInfo.crosshairsDistance > 10) return;
-    if (!buttonList.inAttack.value) return;
-
-    //make sure we don't make rapid skips by more than 10 degrees
-    // if (localPlayer.viewAngle.value.x - closestEnemyBasicInfo.viewAngleToPlayer.pitch > 10) return;
-    // if (localPlayer.viewAngle.value.y - closestEnemyBasicInfo.viewAngleToPlayer.yaw > 10) return;
-
-
-    if (closestEnemyBasicInfo.crosshairsDistance > 10) return;
-
     localPlayer.viewAngle.value = new VectorData(closestEnemyBasicInfo.viewAngleToPlayer.pitch, closestEnemyBasicInfo.viewAngleToPlayer.yaw, 0);
   }
 

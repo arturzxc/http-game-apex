@@ -20,7 +20,7 @@ export class Runner {
     const localPlayer = core.playerList.get(core.localPlayer.value);
     this.updateResearch(vm, localPlayer);
     this.updateSense(core, vm, localPlayer);
-    this.aimbot.update(core.buttonList, localPlayer, core.playerList.values(), core.npcList.values());
+    this.aimbot.update(localPlayer, core.playerList.values(), core.npcList.values());
     this.canvas.height = window.innerHeight;
     this.canvas.width = window.innerWidth;
     this.update(core, vm, localPlayer);
